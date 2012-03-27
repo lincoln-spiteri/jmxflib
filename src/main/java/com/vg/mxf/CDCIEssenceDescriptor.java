@@ -1,5 +1,7 @@
 package com.vg.mxf;
 
+import static com.vg.mxf.Key.key;
+
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -14,6 +16,7 @@ public class CDCIEssenceDescriptor extends GenericPictureEssenceDescriptor {
     Tag32 BlackRefLevel;
     Tag32 WhiteReflevel;
     Tag32 ColorRange;
+    public static final Key Key = key("06.0E.2B.34.02.53.01.01.0D.01.01.01.01.01.28.00");
 
     private final static int localTags[] = new int[] { 0x3301, 0x3302, 0x3303, 0x3304, 0x3305, 0x3306, 0x3307, 0x3308,
             0x3309, 0x330b, };
@@ -23,34 +26,34 @@ public class CDCIEssenceDescriptor extends GenericPictureEssenceDescriptor {
             if (Arrays.binarySearch(localTags, localTag) >= 0) {
                 switch (localTag) {
                 case 0x3301:
-                    ComponentDepth = inner(new Tag32());
+                    ComponentDepth = inner(new Tag32(0x3301));
                     break;
                 case 0x3302:
-                    HorizontalSubsampling = inner(new Tag32());
+                    HorizontalSubsampling = inner(new Tag32(0x3302));
                     break;
                 case 0x3308:
-                    VerticalSubsampling = inner(new Tag32());
+                    VerticalSubsampling = inner(new Tag32(0x3308));
                     break;
                 case 0x3303:
-                    ColorSiting = inner(new Tag8());
+                    ColorSiting = inner(new Tag8(0x3303));
                     break;
                 case 0x330b:
-                    ReversedByteOrder = inner(new Tag8());
+                    ReversedByteOrder = inner(new Tag8(0x330b));
                     break;
                 case 0x3307:
-                    PaddingBits = inner(new Tag16());
+                    PaddingBits = inner(new Tag16(0x3307));
                     break;
                 case 0x3309:
-                    AlphaSampleDepth = inner(new Tag32());
+                    AlphaSampleDepth = inner(new Tag32(0x3309));
                     break;
                 case 0x3304:
-                    BlackRefLevel = inner(new Tag32());
+                    BlackRefLevel = inner(new Tag32(0x3304));
                     break;
                 case 0x3305:
-                    WhiteReflevel = inner(new Tag32());
+                    WhiteReflevel = inner(new Tag32(0x3305));
                     break;
                 case 0x3306:
-                    ColorRange = inner(new Tag32());
+                    ColorRange = inner(new Tag32(0x3306));
                     break;
                 }
                 return true;

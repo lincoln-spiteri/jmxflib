@@ -2,6 +2,7 @@ package com.vg.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 public class BER {
 
@@ -10,7 +11,7 @@ public class BER {
     public static final long decodeLength(InputStream is) throws IOException {
         long length = 0;
         int lengthbyte = is.read();
-    
+
         if ((lengthbyte & ASN_LONG_LEN) > 0) {
             lengthbyte &= ~ASN_LONG_LEN; /* turn MSb off */
             if (lengthbyte == 0) {
@@ -37,6 +38,25 @@ public class BER {
         //            checkLength(is, length);
         //        }
         return length;
+    }
+
+    /**
+     * Encodes the length of an ASN.1 object.
+     * 
+     * @param os
+     *            an <code>OutputStream</code> to which the length is encoded.
+     * @param length
+     *            the length of the object. The maximum length is 0xFFFFFFFF;
+     * @param numLengthBytes
+     *            the number of bytes to be used to encode the length using the
+     *            long form.
+     * @throws IOException
+     */
+    public static final void encodeLength(OutputStream os, long length, int numLengthBytes) throws IOException {
+        os.write((numLengthBytes | ASN_LONG_LEN));
+        for (int i = (numLengthBytes - 1) * 8; i >= 0; i -= 8) {
+            os.write((int) ((length >> i) & 0xFF));
+        }
     }
 
 }

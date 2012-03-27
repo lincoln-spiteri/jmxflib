@@ -1,6 +1,10 @@
 package com.vg.mxf;
 
 public class TagVersion extends BaseTag {
+    public TagVersion(int expectedTag) {
+        super(expectedTag);
+    }
+
     Unsigned16 major = new Unsigned16();
     Unsigned16 minor = new Unsigned16();
     Unsigned16 patch = new Unsigned16();
@@ -10,5 +14,10 @@ public class TagVersion extends BaseTag {
     @Override
     public String toString() {
         return String.format("%d.%d.%d.%d.%d", major.get(), minor.get(), patch.get(), build.get(), released.get());
+    }
+
+    @Override
+    public int getValueSize() {
+        return 10;
     }
 }

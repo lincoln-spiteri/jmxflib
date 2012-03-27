@@ -1,21 +1,26 @@
 package com.vg.mxf;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 import com.vg.util.BER;
-import com.vg.util.FileUtil;
 import com.vg.util.SeekableInputStream;
 
 public class KLV implements Comparable<KLV> {
-    long offset;
-    long dataOffset;
+    public final long offset;
+    public final long dataOffset;
 
-    Key key;
-    long len;
+    public final Key key;
+    public final long len;
 
     ByteBuffer value;
+
+    public KLV(Key k, long len, long offset, long dataOffset) {
+        this.key = k;
+        this.len = len;
+        this.offset = offset;
+        this.dataOffset = dataOffset;
+    }
 
     @Override
     public String toString() {
@@ -31,32 +36,13 @@ public class KLV implements Comparable<KLV> {
         return key.compareTo(o.key);
     }
 
-    static KLV readKLV(InputStream in) throws IOException {
-        KLV klv = new KLV();
-        klv.key = new Key();
-        klv.key.read(in);
-        klv.len = BER.decodeLength(in);
-        klv.value = ByteBuffer.allocate((int) klv.len);
-        FileUtil.readFullyOrDie(in, klv.value);
-        klv.value.clear();
-        return klv;
-    }
-
-    public static KLV readKL(InputStream in) throws IOException {
-        KLV klv = new KLV();
-        klv.key = new Key();
-        klv.key.read(in);
-        klv.len = BER.decodeLength(in);
-        return klv;
-    }
-
     public static KLV readKL(SeekableInputStream in) throws IOException {
-        KLV klv = new KLV();
-        klv.offset = in.position();
-        klv.key = new Key();
-        klv.key.read(in);
-        klv.len = BER.decodeLength(in);
-        klv.dataOffset = in.position();
+        long offset = in.position();
+        Key key = new Key();
+        key.read(in);
+        long len = BER.decodeLength(in);
+        long dataOffset = in.position();
+        KLV klv = new KLV(key, len, offset, dataOffset);
         return klv;
     }
 
@@ -64,6 +50,7 @@ public class KLV implements Comparable<KLV> {
      * @return byte count of BER encoded "length" field
      */
     public int getLenByteCount() {
-        return (int) (dataOffset - offset - 16);
+        int berlen = (int) (dataOffset - offset - 16);
+        return berlen <= 0 ? 4 : berlen;
     }
 }

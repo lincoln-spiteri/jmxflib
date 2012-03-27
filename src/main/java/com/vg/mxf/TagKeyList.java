@@ -10,7 +10,8 @@ public class TagKeyList extends BaseTag {
     Unsigned32 elementSize = new Unsigned32();
     Key[] keys = null;
 
-    public TagKeyList(int elementCount) {
+    public TagKeyList(int expectedTag, int elementCount) {
+        super(expectedTag);
         keys = array(new Key[elementCount]);
     }
 
@@ -28,6 +29,22 @@ public class TagKeyList extends BaseTag {
             xml.appendChild(keys[i].toXml(doc, doc.createElement("key")));
         }
         return xml;
+    }
+
+    @Override
+    public int getValueSize() {
+        return 8 + getCount() * 16;
+    }
+
+    int getCount() {
+        return keys != null ? keys.length : 0;
+    }
+
+    @Override
+    void updateFields() {
+        super.updateFields();
+        elementCount.set(getCount());
+        elementSize.set(16);
     }
 
 }

@@ -5,7 +5,6 @@ import java.util.Arrays;
 
 import org.junit.Assert;
 
-import com.vg.mxf.MxfTest.LocalTags;
 import com.vg.mxf.Registry.ULDesc;
 
 public class InterchangeObject extends MxfValue {
@@ -48,15 +47,15 @@ public class InterchangeObject extends MxfValue {
             switch (localTag) {
             case 0x3c0a:
                 Assert.assertEquals(16, sz);
-                InstanceUID = inner(new TagUUID());
+                InstanceUID = inner(new TagUUID(0x3c0a));
                 break;
             case 0x0102:
                 Assert.assertEquals(16, sz);
-                GenerationUID = inner(new TagUUID());
+                GenerationUID = inner(new TagUUID(0x0102));
                 break;
             case 0x0101:
                 Assert.assertEquals(16, sz);
-                ObjectClass = inner(new TagUUID());
+                ObjectClass = inner(new TagUUID(0x0101));
                 break;
             }
             return true;
@@ -70,4 +69,8 @@ public class InterchangeObject extends MxfValue {
         this.ltks = ltks;
     }
 
+    @Override
+    public UUID getInstanceUID() {
+        return InstanceUID != null ? InstanceUID.uuid : UUID.ZERO;
+    }
 }

@@ -8,7 +8,8 @@ public class TagDeltaEntryArray extends BaseTag {
     Unsigned32 elementSize = new Unsigned32();
     DeltaEntry[] entries;
 
-    public TagDeltaEntryArray(int elementCount) {
+    public TagDeltaEntryArray(int expectedTag, int elementCount) {
+        super(expectedTag);
         entries = array(new DeltaEntry[elementCount]);
     }
 
@@ -21,5 +22,21 @@ public class TagDeltaEntryArray extends BaseTag {
             xml.appendChild(entries[i].toXml(doc, doc.createElement("delta")));
         }
         return xml;
+    }
+
+    public int getCount() {
+        return entries != null ? entries.length : 0;
+    }
+
+    @Override
+    public int getValueSize() {
+        return 8 + DeltaEntry.sizeof * getCount();
+    }
+
+    @Override
+    void updateFields() {
+        super.updateFields();
+        elementCount.set(getCount());
+        elementSize.set(DeltaEntry.sizeof);
     }
 }

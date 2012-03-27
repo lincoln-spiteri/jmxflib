@@ -27,4 +27,30 @@ public class PartitionPack extends MxfValue {
         Assert.assertEquals(16, size);
         EssenceContainers = inner(new KeyList(count));
     }
+
+    public void setIndexSID(int i) {
+        IndexSID.set(i);
+    }
+
+    public void setBodySID(int i) {
+        BodySID.set(i);
+    }
+
+    public void setIndexByteCount(int size) {
+        IndexByteCount.set(size);
+    }
+    
+    public void setFooterPartition(long footerOffset) {
+        FooterPartition.set(footerOffset);
+    }
+    
+    public void setPreviousPartition(long offset) {
+        PreviousPartition.set(offset);
+    }
+    
+    public void setThisPartition(long footerOffset) {
+        ThisPartition.set(footerOffset);
+    }
+    
+
 }

@@ -1,5 +1,6 @@
 package com.vg.util;
 
+import static java.lang.Math.min;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -8,6 +9,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
@@ -16,7 +18,6 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
 import org.apache.commons.lang3.SystemUtils;
-
 
 public class FileUtil {
     public static File tildeExpand(String path) {
@@ -35,6 +36,22 @@ public class FileUtil {
     public static void writeFully(ByteBuffer data, WritableByteChannel channel) throws IOException {
         while (data.hasRemaining()) {
             channel.write(data);
+        }
+    }
+
+    private static final int TRANSFER_SIZE = 4096;
+
+    public static void writeFully(ByteBuffer src, OutputStream out) throws IOException {
+        byte buf[] = new byte[0];
+        int len = src.remaining();
+        int totalWritten = 0;
+        while (totalWritten < len) {
+            int bytesToWrite = min((len - totalWritten), TRANSFER_SIZE);
+            if (buf.length < bytesToWrite)
+                buf = new byte[bytesToWrite];
+            src.get(buf, 0, bytesToWrite);
+            out.write(buf, 0, bytesToWrite);
+            totalWritten += bytesToWrite;
         }
     }
 

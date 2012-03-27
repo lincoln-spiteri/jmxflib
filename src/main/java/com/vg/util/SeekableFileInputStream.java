@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 
-public class RandomAccessFileBufferedInputStream extends SeekableInputStream {
+public class SeekableFileInputStream extends SeekableInputStream {
 
     private final RandomAccessFile raf;
     private final FileInputStream fin;
@@ -17,7 +17,7 @@ public class RandomAccessFileBufferedInputStream extends SeekableInputStream {
     private InputStream cin;
     private long pos;
 
-    public RandomAccessFileBufferedInputStream(File file, long offset) throws IOException {
+    public SeekableFileInputStream(File file, long offset) throws IOException {
         this(raf(file, offset));
 
     }
@@ -30,11 +30,11 @@ public class RandomAccessFileBufferedInputStream extends SeekableInputStream {
         return raf;
     }
 
-    public RandomAccessFileBufferedInputStream(File file) throws IOException {
+    public SeekableFileInputStream(File file) throws IOException {
         this(raf(file, 0));
     }
 
-    public RandomAccessFileBufferedInputStream(RandomAccessFile raf) throws IOException {
+    public SeekableFileInputStream(RandomAccessFile raf) throws IOException {
         this.raf = raf;
         this.fin = new FileInputStream(raf.getFD());
         this.startPosition = raf.getFilePointer();

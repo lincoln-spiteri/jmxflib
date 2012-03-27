@@ -1,5 +1,7 @@
 package com.vg.mxf;
 
+import static com.vg.mxf.Key.key;
+
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
@@ -11,6 +13,7 @@ public class RandomIndex extends MxfValue {
     private int overallLength;
     private IntBuffer sids;
     private LongBuffer offsets;
+    public static final Key Key = key("06.0E.2B.34.02.05.01.01.0D.01.02.01.01.11.01.00");
 
     @Override
     public void parse() {

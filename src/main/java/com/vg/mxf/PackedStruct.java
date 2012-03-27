@@ -1,6 +1,9 @@
 package com.vg.mxf;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.util.LinkedHashMap;
@@ -102,10 +105,12 @@ public class PackedStruct extends Struct {
             Class pop = stack.pop();
             Field[] declaredFields2 = pop.getDeclaredFields();
             for (Field field : declaredFields2) {
-                boolean accessible = field.isAccessible();
-                field.setAccessible(true);
-                addAttribute(doc, xml, field);
-                field.setAccessible(accessible);
+                if (notStatic(field)) {
+                    boolean accessible = field.isAccessible();
+                    field.setAccessible(true);
+                    addAttribute(doc, xml, field);
+                    field.setAccessible(accessible);
+                }
             }
             Class superclass = pop.getSuperclass();
             if (!Object.class.equals(superclass)) {
@@ -114,6 +119,39 @@ public class PackedStruct extends Struct {
         }
 
         return xml;
+    }
+
+    private boolean notStatic(Field field) {
+        return (field.getModifiers() & Modifier.STATIC) == 0;
+    }
+
+    void updateFields() {
+        Field[] declaredFields = this.getClass().getDeclaredFields();
+        for (int i = 0; i < declaredFields.length; i++) {
+            Field field = declaredFields[i];
+            if (notStatic(field) && PackedStruct.class.isAssignableFrom(field.getType())) {
+                try {
+                    boolean accessible = field.isAccessible();
+                    field.setAccessible(true);
+                    PackedStruct tag = (PackedStruct) field.get(this);
+                    if (tag != null) {
+                        tag.updateFields();
+                    }
+                    field.setAccessible(accessible);
+                } catch (IllegalArgumentException e) {
+                    throw new RuntimeException(e);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+    }
+
+    @Override
+    public void write(OutputStream out) throws IOException {
+        updateFields();
+        super.write(out);
     }
 
     private void addAttribute(Document doc, Element xml, Field field) {

@@ -4,6 +4,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class TagKey extends BaseTag {
+    public TagKey(int expectedTag) {
+        super(expectedTag);
+    }
+
     Key key = inner(new Key());
 
     @Override
@@ -18,5 +22,10 @@ public class TagKey extends BaseTag {
         }
         xml.appendChild(key.toXml(doc, doc.createElement("key")));
         return xml;
+    }
+
+    @Override
+    public int getValueSize() {
+        return 16;
     }
 }

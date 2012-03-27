@@ -8,7 +8,8 @@ public class TagIndexEntryArray extends BaseTag {
     Unsigned32 elementSize = new Unsigned32();
     IndexEntry[] entries;
 
-    public TagIndexEntryArray(int elementCount) {
+    public TagIndexEntryArray(int expectedTag, int elementCount) {
+        super(expectedTag);
         entries = array(new IndexEntry[elementCount]);
     }
 
@@ -21,5 +22,21 @@ public class TagIndexEntryArray extends BaseTag {
             xml.appendChild(entries[i].toXml(doc, doc.createElement("index")));
         }
         return xml;
+    }
+
+    @Override
+    public int getValueSize() {
+        return 8 + IndexEntry.sizeof * getCount();
+    }
+
+    int getCount() {
+        return entries != null ? entries.length : 0;
+    }
+
+    @Override
+    void updateFields() {
+        super.updateFields();
+        elementCount.set(getCount());
+        elementSize.set(IndexEntry.sizeof);
     }
 }

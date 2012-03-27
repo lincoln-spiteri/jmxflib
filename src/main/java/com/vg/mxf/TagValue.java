@@ -38,8 +38,14 @@ public class TagValue extends BaseTag {
 
     Blob value = null;
 
-    public TagValue(int valueSizeBytes) {
+    public TagValue(int expectedTag, int valueSizeBytes) {
+        super(expectedTag);
         value = new Blob(valueSizeBytes);
+    }
+
+    @Override
+    public int getValueSize() {
+        return value != null ? value.bitLength() >> 3 : 0;
     }
 
 }
