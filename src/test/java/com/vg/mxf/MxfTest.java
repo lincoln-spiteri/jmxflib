@@ -37,6 +37,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -48,6 +49,7 @@ import com.vg.util.LongArrayList;
 import com.vg.util.SeekableFileInputStream;
 import com.vg.util.SeekableInputStream;
 
+@Ignore
 public class MxfTest {
 
     @Test
@@ -56,22 +58,6 @@ public class MxfTest {
         long decodeLength = BER.decodeLength(new ByteArrayInputStream(b));
         System.out.println(decodeLength);
         System.out.println((int) '0');
-    }
-
-    @Test
-    public void testXml() throws Exception {
-        DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        Document document = builder.newDocument();
-        Element element = document.createElement("asd");
-        document.appendChild(element);
-        Element element2 = document.createElement("asd");
-        document.appendChild(element2);
-
-    }
-    
-    @Test
-    public void testMakeOneFrameMxf() throws Exception {
-        
     }
 
     @Test

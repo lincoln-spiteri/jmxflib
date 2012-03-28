@@ -7,11 +7,13 @@ import java.io.IOException;
 
 import org.apache.commons.lang3.math.Fraction;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.vg.util.SeekableFileInputStream;
 import com.vg.util.SeekableInputStream;
 
+@Ignore
 public class MxfStructureTest {
     @Test
     public void testNtsc() throws Exception {
