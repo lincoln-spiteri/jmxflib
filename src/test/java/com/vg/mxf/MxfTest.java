@@ -49,7 +49,7 @@ import com.vg.util.LongArrayList;
 import com.vg.util.SeekableFileInputStream;
 import com.vg.util.SeekableInputStream;
 
-//@Ignore
+@Ignore
 public class MxfTest {
 
     @Test
