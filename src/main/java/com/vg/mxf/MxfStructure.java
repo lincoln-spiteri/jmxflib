@@ -3,12 +3,27 @@ package com.vg.mxf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
+import com.vg.mxf.Registry.ULDesc;
+import com.vg.util.SeekableFileInputStream;
 import com.vg.util.SeekableInputStream;
+import com.vg.util.XmlUtil;
 
 public class MxfStructure {
     private HeaderPartitionPack headerPartitionPack;
@@ -62,7 +77,6 @@ public class MxfStructure {
             uuidIndex.put(instanceUID, value);
         }
 
-        //System.out.println("index size: " + uuidIndex.size());
     }
 
     Set<Entry<KLV, MxfValue>> entries() {
@@ -100,8 +114,6 @@ public class MxfStructure {
             s.setFooterPartitionPack(footerPartitionPack);
             long headerPPOffset = headerPartitionPack.ThisPartition.get();
             long previousPartitionOffset = footerPartitionPack.PreviousPartition.get();
-            //            System.out.println("footer @" + kl.offset);
-            //            System.out.println(footerPartitionPack.toDebugString());
 
             //read backwards partitions and indexes
             TreeMap<KLV, MxfValue> bodyKLVs = s.bodyKLVs;
@@ -109,10 +121,8 @@ public class MxfStructure {
             do {
                 in.seek(previousPartitionOffset);
                 kl = KLV.readKL(in);
-                System.out.println("pos in file " + kl.offset + " 0x" + Long.toHexString(kl.offset));
                 if (BodyPartitionPack.Key.equals(kl.key)) {
                     BodyPartitionPack bpp = MxfValue.parseValue(in, kl, BodyPartitionPack.class);
-                    //System.out.println(bpp.toDebugString());
                     //sanity check: make sure partition offsets are actually going backwards
                     assertTrue(bpp.PreviousPartition.get() < previousPartitionOffset);
                     bodyKLVs.put(kl, bpp);
@@ -209,7 +219,6 @@ public class MxfStructure {
             headerKLVs.put(k0, headerPartitionPack);
             while (in.position() < headerPartitionPack.HeaderByteCount.get()) {
                 KLV k = KLV.readKL(in);
-                System.out.println("pos in file " + k.offset + " 0x" + Long.toHexString(k.offset));
                 Class<? extends MxfValue> class1 = Registry.m.get(k.key);
                 if (class1 == null) {
                     class1 = MxfValue.class;
@@ -258,6 +267,127 @@ public class MxfStructure {
             }
         }
         return null;
+    }
+
+    public static void toXml(TreeMap<KLV, MxfValue> mxfStructure, File outFile) throws IOException,
+            ParserConfigurationException {
+        Registry registry = Registry.getInstance();
+        DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        Document document = builder.newDocument();
+        Element root = document.createElement("mxf");
+        document.appendChild(root);
+
+        for (Entry<KLV, MxfValue> entry : mxfStructure.entrySet()) {
+            KLV klv = entry.getKey();
+            MxfValue value = entry.getValue();
+
+            String defaultName = "klv";
+            if (Registry.FrameKey.equals(klv.key)) {
+                defaultName = "frame";
+            } else if (Registry.FillerKey.equals(klv.key)) {
+                defaultName = "filler";
+            }
+            Element element = document.createElement(value == null ? defaultName : value.getClass().getName());
+            element.setAttribute("offset", "" + klv.offset);
+            element.setAttribute("key", klv.key.toString());
+            element.setAttribute("len", "" + klv.len);
+            Registry.ULDesc ulDesc = registry.get(klv.key);
+            if (ulDesc != null) {
+                element.setAttribute("name", ulDesc.refName);
+                Element desc = document.createElement("desc");
+                desc.setTextContent(ulDesc.desc);
+                element.appendChild(desc);
+            }
+            if (value != null) {
+                value.toXml(document, element);
+            }
+            root.appendChild(element);
+        }
+
+        NodeList elst = document.getElementsByTagName("key");
+        for (int i = 0; i < elst.getLength(); i++) {
+            Element item = (Element) elst.item(i);
+            if (item.hasAttribute("ul")) {
+                String ul = item.getAttribute("ul");
+                Registry.ULDesc ulDesc = registry.get(ul);
+                if (ulDesc != null) {
+                    item.setAttribute("name", ulDesc.refName);
+                    item.setAttribute("desc", ulDesc.desc);
+                }
+            }
+        }
+
+        XmlUtil.writeXml(document, outFile);
+    }
+
+    public Document toXml() throws IOException, ParserConfigurationException {
+        Registry registry = Registry.getInstance();
+        DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        Document document = builder.newDocument();
+        Element root = document.createElement("mxf");
+        document.appendChild(root);
+
+        for (Entry<KLV, MxfValue> entry : allKLVs.entrySet()) {
+            KLV klv = entry.getKey();
+            MxfValue value = entry.getValue();
+
+            String defaultName = "klv";
+            if (Registry.FrameKey.equals(klv.key)) {
+                defaultName = "frame";
+            } else if (Registry.FillerKey.equals(klv.key)) {
+                defaultName = "filler";
+            }
+            Element element = document.createElement(value == null ? defaultName : value.getClass().getName());
+            element.setAttribute("offset", "" + klv.offset);
+            element.setAttribute("key", klv.key.toString());
+            element.setAttribute("len", "" + klv.len);
+            Registry.ULDesc ulDesc = registry.get(klv.key);
+            if (ulDesc != null) {
+                element.setAttribute("name", ulDesc.refName);
+                Element desc = document.createElement("desc");
+                desc.setTextContent(ulDesc.desc);
+                element.appendChild(desc);
+            }
+            if (value != null) {
+                value.toXml(document, element);
+            }
+            root.appendChild(element);
+        }
+
+        NodeList elst = document.getElementsByTagName("key");
+        for (int i = 0; i < elst.getLength(); i++) {
+            Element item = (Element) elst.item(i);
+            if (item.hasAttribute("ul")) {
+                String ul = item.getAttribute("ul");
+                Registry.ULDesc ulDesc = registry.get(ul);
+                if (ulDesc != null) {
+                    item.setAttribute("name", ulDesc.refName);
+                    item.setAttribute("desc", ulDesc.desc);
+                }
+            }
+        }
+
+        return document;
+    }
+
+    public static void main(String[] args) throws Exception {
+        if (args.length < 1) {
+            System.err.println("usage: " + MxfStructure.class.getName() + " in.mxf {out.xml}");
+            System.exit(1);
+        }
+
+        File f = new File(args[0]);
+        OutputStream out = System.out;
+        if (args.length > 1) {
+            out = new BufferedOutputStream(new FileOutputStream(new File(args[1])));
+        }
+
+        SeekableFileInputStream in = new SeekableFileInputStream(f);
+        MxfStructure structure = MxfStructure.readStructure(in);
+        Document xml = structure.toXml();
+        XmlUtil.writeXml(xml, out);
+        in.close();
+        out.close();
     }
 
 }

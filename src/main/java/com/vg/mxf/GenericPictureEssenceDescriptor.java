@@ -39,7 +39,6 @@ public class GenericPictureEssenceDescriptor extends FileDescriptor {
             0x3216, 0x3217, 0x3218, 0x3219, 0x321a };
 
     boolean handleTag(int localTag, int sz, ByteBuffer buf) {
-        System.out.println("pic " + Integer.toHexString(localTag));
         if (!super.handleTag(localTag, sz, buf)) {
             if (Arrays.binarySearch(localTags, localTag) >= 0) {
                 switch (localTag) {

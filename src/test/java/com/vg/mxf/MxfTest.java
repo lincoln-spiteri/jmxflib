@@ -9,7 +9,6 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -18,36 +17,25 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.List;
 import java.util.Map.Entry;
-import java.util.ArrayList;
 import java.util.TreeMap;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
-import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 import com.vg.util.BER;
 import com.vg.util.FileUtil;
 import com.vg.util.LongArrayList;
 import com.vg.util.SeekableFileInputStream;
 import com.vg.util.SeekableInputStream;
+import com.vg.util.XmlUtil;
 
 @Ignore
 public class MxfTest {
@@ -79,7 +67,7 @@ public class MxfTest {
         }
         in.close();
 
-        toXml(mxfStructure, new File("tmp/out.xml"));
+        MxfStructure.toXml(mxfStructure, new File("tmp/out.xml"));
     }
 
     @Test
@@ -127,7 +115,7 @@ public class MxfTest {
         }
         in.close();
 
-        toXml(mxfStructure, new File("tmp/out3.xml"));
+        MxfStructure.toXml(mxfStructure, new File("tmp/out3.xml"));
     }
 
     @Test
@@ -135,7 +123,7 @@ public class MxfTest {
         SeekableInputStream in = new SeekableFileInputStream(new File("testdata/DawnOfTheDead_TRAILER3_110711_01.mxf"));
         MxfStructure structure = MxfStructure.readStructure(in);
         in.close();
-        toXml(structure.allKLVs, new File("tmp/out4.xml"));
+        MxfStructure.toXml(structure.allKLVs, new File("tmp/out4.xml"));
     }
 
     @Test
@@ -159,7 +147,7 @@ public class MxfTest {
         }
         in.close();
 
-        toXml(mxfStructure, new File("tmp/wof.xml"));
+        MxfStructure.toXml(mxfStructure, new File("tmp/wof.xml"));
     }
 
     @Test
@@ -335,64 +323,6 @@ public class MxfTest {
         return in;
     }
 
-    private void toXml(TreeMap<KLV, MxfValue> mxfStructure, File outFile) throws IOException,
-            ParserConfigurationException {
-        Registry registry = Registry.getInstance();
-        DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        Document document = builder.newDocument();
-        Element root = document.createElement("mxf");
-        document.appendChild(root);
-
-        int J = 0;
-        for (Entry<KLV, MxfValue> entry : mxfStructure.entrySet()) {
-            KLV klv = entry.getKey();
-            MxfValue value = entry.getValue();
-
-            String defaultName = "klv";
-            if (Registry.FrameKey.equals(klv.key)) {
-                defaultName = "frame";
-            } else if (Registry.FillerKey.equals(klv.key)) {
-                defaultName = "filler";
-            }
-            Element element = document.createElement(value == null ? defaultName : value.getClass().getName());
-            element.setAttribute("offset", "" + klv.offset);
-            element.setAttribute("key", klv.key.toString());
-            element.setAttribute("len", "" + klv.len);
-            Registry.ULDesc ulDesc = registry.get(klv.key);
-            if (ulDesc != null) {
-                element.setAttribute("name", ulDesc.refName);
-                Element desc = document.createElement("desc");
-                desc.setTextContent(ulDesc.desc);
-                element.appendChild(desc);
-            }
-            if (value != null) {
-                value.toXml(document, element);
-            }
-            root.appendChild(element);
-            J++;
-            System.out.println(mxfStructure.size() + " " + J);
-            //            if (J > 14) {
-            //                break;
-            //            }
-        }
-
-        NodeList elst = document.getElementsByTagName("key");
-        for (int i = 0; i < elst.getLength(); i++) {
-            Element item = (Element) elst.item(i);
-            if (item.hasAttribute("ul")) {
-                String ul = item.getAttribute("ul");
-                Registry.ULDesc ulDesc = registry.get(ul);
-                if (ulDesc != null) {
-                    item.setAttribute("name", ulDesc.refName);
-                    item.setAttribute("desc", ulDesc.desc);
-                }
-            }
-        }
-
-        writeXml(document, outFile);
-        System.out.println("done");
-    }
-
     @Test
     public void testTagValueXml() throws Exception {
         DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -405,24 +335,7 @@ public class MxfTest {
         Element xml = doc.createElement("v");
         Element xml2 = v.toXml(doc, xml);
         root.appendChild(xml2);
-        writeXml(doc, new File("tmp/out.xml"));
-    }
-
-    public static void writeXml(Document document, File outxml) {
-        try {
-            TransformerFactory tf = TransformerFactory.newInstance();
-            Transformer serializer;
-            serializer = tf.newTransformer();
-            serializer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-            serializer.setOutputProperty(OutputKeys.INDENT, "yes");
-            DOMSource domSource = new DOMSource(document);
-            StreamResult streamResult = new StreamResult(outxml);
-            serializer.transform(domSource, streamResult);
-        } catch (TransformerConfigurationException e) {
-            throw new RuntimeException(e);
-        } catch (TransformerException e) {
-            throw new RuntimeException(e);
-        }
+        XmlUtil.writeXml(doc, new File("tmp/out.xml"));
     }
 
     @Test
