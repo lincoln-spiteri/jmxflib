@@ -13,7 +13,7 @@ import org.junit.Test;
 public class IndexTableTest {
     @Test
     public void testTags() throws Exception {
-        int[] localTags = IndexTable.getLocalTags(IndexTable.class);
+        int[] localTags = IndexTable.handledLocalTags(IndexTable.class);
         Assert.assertEquals(13, localTags.length);
         Assert.assertEquals(0x3f10, localTags[12]);
     }

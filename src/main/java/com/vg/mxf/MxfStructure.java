@@ -139,6 +139,16 @@ public class MxfStructure {
         return s;
     }
 
+    private PrimerPack getPrimerPack() {
+        for (Entry<KLV, MxfValue> entry : headerKLVs.entrySet()) {
+            MxfValue value = entry.getValue();
+            if (value instanceof PrimerPack) {
+                return (PrimerPack) value;
+            }
+        }
+        return null;
+    }
+
     public FooterPartitionPack getFooterPartitionPack() {
         return footerPartitionPack;
     }
@@ -194,6 +204,7 @@ public class MxfStructure {
         }
         TreeMap<KLV, MxfValue> headerKLVs = new TreeMap<KLV, MxfValue>();
 
+        LocalTagsIndex idx = null;
         if (headerPartitionPack != null && headerPartitionPack.HeaderByteCount.get() > 0) {
             headerKLVs.put(k0, headerPartitionPack);
             while (in.position() < headerPartitionPack.HeaderByteCount.get()) {
@@ -203,8 +214,17 @@ public class MxfStructure {
                 if (class1 == null) {
                     class1 = MxfValue.class;
                 }
-                MxfValue value = MxfValue.parseValue(in, k, class1);
+                MxfValue value;
+                if (idx == null) {
+                    value = MxfValue.parseValue(in, k, class1);
+                } else {
+                    value = MxfValue.parseValue(in, k, class1, idx);
+                }
                 headerKLVs.put(k, value);
+                if (PrimerPack.Key.equals(k.key)) {
+                    PrimerPack pp = (PrimerPack) value;
+                    idx = LocalTagsIndex.createLocalTagsIndex(pp.ltks);
+                }
             }
         }
         return headerKLVs;

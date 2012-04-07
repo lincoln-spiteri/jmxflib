@@ -40,7 +40,31 @@ public class MxfValue extends PackedStruct {
         }
     }
 
-    static int[] getLocalTags(Class<? extends MxfValue> c) {
+    public static <T extends MxfValue> T parseValue(SeekableInputStream in, KLV kl, Class<T> class1, LocalTagsIndex idx)
+            throws IOException {
+        ByteBuffer buf = ByteBuffer.allocate((int) kl.len);
+        FileUtil.readFullyOrDie(in, buf).flip();
+        try {
+            T value;
+            value = class1.newInstance();
+            value.setLocalTags(idx);
+            value.setByteBuffer(buf, 0);
+            value.parse();
+            return value;
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    LocalTagsIndex ltks;
+
+    public void setLocalTags(LocalTagsIndex ltks) {
+        this.ltks = ltks;
+    }
+
+    static int[] handledLocalTags(Class<? extends MxfValue> c) {
 
         TreeSet<Integer> tags = new TreeSet<Integer>();
         for (Field field : c.getDeclaredFields()) {

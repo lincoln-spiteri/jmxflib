@@ -33,6 +33,7 @@ public class Registry {
         m.put(TimecodeComponent.Key, TimecodeComponent.class);
         m.put(SourceClip.Key, SourceClip.class);
         m.put(SourcePackage.Key, SourcePackage.class);
+        m.put(RGBAEssenceDescriptor.Key, RGBAEssenceDescriptor.class);
         m.put(CDCIEssenceDescriptor.Key, CDCIEssenceDescriptor.class);
         m.put(JPEG2000PictureSubDescriptor.Key, JPEG2000PictureSubDescriptor.class);
         m.put(RandomIndex.Key, RandomIndex.class);

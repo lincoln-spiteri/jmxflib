@@ -49,7 +49,7 @@ import com.vg.util.LongArrayList;
 import com.vg.util.SeekableFileInputStream;
 import com.vg.util.SeekableInputStream;
 
-@Ignore
+//@Ignore
 public class MxfTest {
 
     @Test
@@ -128,6 +128,14 @@ public class MxfTest {
         in.close();
 
         toXml(mxfStructure, new File("tmp/out3.xml"));
+    }
+
+    @Test
+    public void testToXml4() throws Exception {
+        SeekableInputStream in = new SeekableFileInputStream(new File("testdata/DawnOfTheDead_TRAILER3_110711_01.mxf"));
+        MxfStructure structure = MxfStructure.readStructure(in);
+        in.close();
+        toXml(structure.allKLVs, new File("tmp/out4.xml"));
     }
 
     @Test

@@ -23,7 +23,7 @@ public class InterchangeObject extends MxfValue {
                 if (ltks != null) {
                     LocalTagKey ltk = ltks.getLtk(localTag);
                     if (ltk != null) {
-                        Registry.ULDesc desc = ltks.getDesc(ltk.key.toString());
+                        ULDesc desc = Registry.getInstance().get(ltk.key);
                         String n = "";
                         String d = "";
                         if (desc != null) {
@@ -61,12 +61,6 @@ public class InterchangeObject extends MxfValue {
             return true;
         }
         return false;
-    }
-
-    private LocalTags ltks;
-
-    public void setLocalTags(LocalTags ltks) {
-        this.ltks = ltks;
     }
 
     @Override

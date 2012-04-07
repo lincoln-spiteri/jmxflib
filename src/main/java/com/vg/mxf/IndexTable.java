@@ -9,7 +9,7 @@ import org.junit.Assert;
 
 public class IndexTable extends MxfValue {
     public static final Key Key = key("06.0E.2B.34.02.53.01.01.0D.01.02.01.01.10.01.00");
-    private final static int localTags[] = getLocalTags(IndexTable.class);//new int[] { 0x3f09, 0x3f0a, 0x3f0e, 0x3f0f, 0x3f10 };
+    private final static int localTags[] = handledLocalTags(IndexTable.class);//new int[] { 0x3f09, 0x3f0a, 0x3f0e, 0x3f0f, 0x3f10 };
 
     @Tag(tag = 0x3c0a)
     TagUUID InstanceUID = inner(new TagUUID(0x3c0a));
