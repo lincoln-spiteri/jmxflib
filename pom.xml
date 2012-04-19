@@ -26,10 +26,30 @@
 					<source>1.6</source>
 					<target>1.6</target>
 				</configuration>
-			</plugin>
-		</plugins>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <dependencies>
+                  <dependency>
+                    <groupId>org.apache.maven.wagon</groupId>
+                    <artifactId>wagon-ssh</artifactId>
+                    <version>2.2</version>
+                  </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
 
-	</build>
+    <distributionManagement>
+      <repository>
+        <id>public-vg</id>
+        <name>public-vg</name>
+        <url>scp://videogorillas.com//var/www/users/videogorillas/m2/public</url>
+      </repository>
+    </distributionManagement>
+
+
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
