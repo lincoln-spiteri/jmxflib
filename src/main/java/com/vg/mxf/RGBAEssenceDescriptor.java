@@ -15,9 +15,11 @@ public class RGBAEssenceDescriptor extends GenericPictureEssenceDescriptor {
     TagValue Palette;
     TagValue PaletteLayout;
     TagValue ffff;
+    TagValue _8000;
     public static final Key Key = key("06.0E.2B.34.02.53.01.01.0D.01.01.01.01.01.29.00");
 
-    private final static int localTags[] = new int[] { 0x3401, 0x3403, 0x3404, 0x3405, 0x3406, 0x3407, 0x3408, 0x3409, 0xffff };
+    private final static int localTags[] = new int[] { 0x3401, 0x3403, 0x3404, 0x3405, 0x3406, 0x3407, 0x3408, 0x3409,
+            0x8000, 0xffff };
 
     boolean handleTag(int localTag, int sz, ByteBuffer buf) {
         if (!super.handleTag(localTag, sz, buf)) {
@@ -46,6 +48,9 @@ public class RGBAEssenceDescriptor extends GenericPictureEssenceDescriptor {
                     break;
                 case 0x3404:
                     PaletteLayout = inner(new TagValue(0x3404, sz));
+                    break;
+                case 0x8000:
+                    _8000 = inner(new TagValue(0x8000, sz));
                     break;
                 case 0xffff:
                     ffff = inner(new TagValue(0xffff, sz));
