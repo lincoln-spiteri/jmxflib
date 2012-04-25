@@ -20,7 +20,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import com.vg.mxf.Registry.ULDesc;
 import com.vg.util.SeekableFileInputStream;
 import com.vg.util.SeekableInputStream;
 import com.vg.util.XmlUtil;
@@ -108,7 +107,7 @@ public class MxfStructure {
             assertTrue(footerOffset > 0);
             in.seek(footerOffset);
             KLV kl = KLV.readKL(in);
-            assertEquals(FooterPartitionPack.Key, kl.key);
+            assertTrue(FooterPartitionPack.Key.matches(kl.key));
             FooterPartitionPack footerPartitionPack = MxfValue.parseValue(in, kl, FooterPartitionPack.class);
             s.footerKLV = kl;
             s.setFooterPartitionPack(footerPartitionPack);
@@ -121,7 +120,7 @@ public class MxfStructure {
             do {
                 in.seek(previousPartitionOffset);
                 kl = KLV.readKL(in);
-                if (BodyPartitionPack.Key.equals(kl.key)) {
+                if (BodyPartitionPack.Key.matches(kl.key)) {
                     BodyPartitionPack bpp = MxfValue.parseValue(in, kl, BodyPartitionPack.class);
                     //sanity check: make sure partition offsets are actually going backwards
                     assertTrue(bpp.PreviousPartition.get() < previousPartitionOffset);
@@ -134,7 +133,7 @@ public class MxfStructure {
                         IndexTable indexTable = MxfValue.parseValue(in, kl, IndexTable.class);
                         indexKLVs.put(kl, indexTable);
                     }
-                } else if (HeaderPartitionPack.Key.equals(kl.key)) {
+                } else if (HeaderPartitionPack.Key.matches(kl.key)) {
                     break;
                 } else {
                     throw new IllegalStateException();
@@ -209,7 +208,7 @@ public class MxfStructure {
     public static TreeMap<KLV, MxfValue> readHeader(SeekableInputStream in) throws IOException {
         KLV k0 = KLV.readKL(in);
         HeaderPartitionPack headerPartitionPack = null;
-        if (HeaderPartitionPack.Key.equals(k0.key)) {
+        if (HeaderPartitionPack.Key.matches(k0.key)) {
             headerPartitionPack = MxfValue.parseValue(in, k0, HeaderPartitionPack.class);
         }
         TreeMap<KLV, MxfValue> headerKLVs = new TreeMap<KLV, MxfValue>();

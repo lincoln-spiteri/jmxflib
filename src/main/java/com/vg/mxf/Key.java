@@ -1,6 +1,7 @@
 package com.vg.mxf;
 
 import java.nio.ByteBuffer;
+import java.nio.LongBuffer;
 import java.util.Arrays;
 
 import org.junit.Assert;
@@ -19,6 +20,9 @@ public class Key extends PackedStruct implements Comparable<Key> {
     Unsigned8 version = new Unsigned8();
 
     Unsigned8[] item = array(new Unsigned8[8]);
+
+    long hiMask = 0;
+    long loMask = 0;
 
     public static Key key(String ul) {
         Key k = new Key();
@@ -103,9 +107,29 @@ public class Key extends PackedStruct implements Comparable<Key> {
         return sb.toString();
     }
 
+    public boolean matches(Key o) {
+        LongBuffer lb = ByteBuffer.wrap(getBytes()).asLongBuffer();
+        long him = hiMask | o.hiMask;
+        long lom = loMask | o.loMask;
+        long hi = lb.get(0) & (~him);
+        long lo = lb.get(1) & (~lom);
+
+        LongBuffer lb2 = ByteBuffer.wrap(o.getBytes()).asLongBuffer();
+        long hi2 = lb2.get(0) & (~him);
+        long lo2 = lb2.get(1) & (~lom);
+
+        return hi == hi2 && lo == lo2;
+    }
+
     @Override
     public Element toXml(Document doc, Element xml) {
         xml.setAttribute("ul", toString());
         return xml;
+    }
+
+    public static Key key(String string, long loMask) {
+        Key key = key(string);
+        key.loMask = loMask;
+        return key;
     }
 }
