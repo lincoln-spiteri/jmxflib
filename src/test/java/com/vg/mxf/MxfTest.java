@@ -25,19 +25,18 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.io.output.CountingOutputStream;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.vg.io.SeekableFileInputStream;
+import com.vg.io.SeekableInputStream;
 import com.vg.util.BER;
 import com.vg.util.FileUtil;
 import com.vg.util.LongArrayList;
-import com.vg.util.SeekableFileInputStream;
-import com.vg.util.SeekableInputStream;
 import com.vg.util.XmlUtil;
 
-@Ignore
+//@Ignore
 public class MxfTest {
 
     @Test
@@ -613,6 +612,79 @@ public class MxfTest {
             }
 
         } while (fn != 46 && in.position() < in.length());
+        in.close();
+
+        long fppPos = out.getByteCount();
+        FooterPartitionPack fpp = s.getFooterPartitionPack();
+        fpp.PreviousPartition.set(0);
+        fpp.ThisPartition.set(fppPos);
+        fpp.FooterPartition.set(fppPos);
+        out.write(FooterPartitionPack.Key.getBytes());
+        encodeLength(out, fpp.size(), 3);
+        FileUtil.writeFully(fpp.getByteBuffer().duplicate(), out);
+
+        //rewrite header
+        out.close();
+        RandomAccessFile raf = new RandomAccessFile(outMxf, "rw");
+        FileChannel channel = raf.getChannel();
+
+        HeaderPartitionPack hpp = s.getHeaderPartitionPack();
+        hpp.FooterPartition.set(fppPos);
+        ByteArrayOutputStream bout = new ByteArrayOutputStream(20);
+        bout.write(HeaderPartitionPack.Key.getBytes());
+        encodeLength(bout, hpp.size(), 3);
+        writeFully(ByteBuffer.wrap(bout.toByteArray()), channel);
+        writeFully(hpp.getByteBuffer().duplicate(), channel);
+        channel.close();
+        raf.close();
+
+    }
+
+    @Test
+    public void testCutFrames() throws Exception {
+        SeekableInputStream in = j2k();
+        MxfStructure s = MxfStructure.readStructure(in);
+        TreeMap<KLV, MxfValue> header = s.headerKLVs;
+
+        int max_frames = 100;
+        //hack header
+        for (Entry<KLV, MxfValue> entry : header.entrySet()) {
+            MxfValue v = entry.getValue();
+            if (v != null && v instanceof StructuralComponent) {
+                StructuralComponent sc = (StructuralComponent) v;
+                sc.setDuration(max_frames);
+            }
+        }
+        s.getEssenceContainerData().IndexSID.value.set(0);
+
+        File outMxf = new File("tmp/" + max_frames + ".mxf");
+        CountingOutputStream out = new CountingOutputStream(new BufferedOutputStream(new FileOutputStream(outMxf)));
+
+        for (Entry<KLV, MxfValue> entry : header.entrySet()) {
+            KLV k = entry.getKey();
+            MxfValue v = entry.getValue();
+            int capacity = v.getByteBuffer().capacity();
+            assertEquals(k.len, capacity);
+            out.write(k.key.getBytes());
+            encodeLength(out, k.len, k.getLenByteCount() - 1);
+            FileUtil.writeFully(v.getByteBuffer().duplicate(), out);
+        }
+
+        long bodyOffset = s.getBodyOffset();
+        FileUtil.forceSeek(in, bodyOffset);
+        int fn = 0;
+        do {
+            KLV k = KLV.readKL(in);
+            if (Registry.FrameKey.equals(k.key)) {
+                ByteBuffer frameBuf = ByteBuffer.allocate((int) k.len);
+                readFullyOrDie(in, frameBuf).flip();
+                out.write(k.key.getBytes());
+                encodeLength(out, k.len, k.getLenByteCount() - 1);
+                FileUtil.writeFully(frameBuf, out);
+                fn++;
+            }
+
+        } while (fn != max_frames && in.position() < in.length());
         in.close();
 
         long fppPos = out.getByteCount();

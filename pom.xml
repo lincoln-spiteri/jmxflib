@@ -1,11 +1,16 @@
-<project
-	xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>jmxflib</groupId>
 	<artifactId>jmxflib</artifactId>
-	<version>0.0.3</version>
+	<version>0.0.4</version>
+	<repositories>
+		<repository>
+			<id>public.videogorillas.com</id>
+			<name>public.videogorillas.com</name>
+			<url>http://videogorillas.com/m2/public/</url>
+		</repository>
+	</repositories>
 	<build>
 		<resources>
 			<resource>
@@ -26,28 +31,41 @@
 					<source>1.6</source>
 					<target>1.6</target>
 				</configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <dependencies>
-                  <dependency>
-                    <groupId>org.apache.maven.wagon</groupId>
-                    <artifactId>wagon-ssh</artifactId>
-                    <version>2.2</version>
-                  </dependency>
-                </dependencies>
-            </plugin>
-        </plugins>
-    </build>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.maven.wagon</groupId>
+						<artifactId>wagon-ssh</artifactId>
+						<version>2.2</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.2.1</version>
+				<configuration>
+					<descriptors>
+						<descriptor>uberjar.xml</descriptor>
+					</descriptors>
+					<finalName>jmxflib-${project.version}</finalName>
+					<outputDirectory>target</outputDirectory>
+					<workDirectory>target/assembly/work</workDirectory>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
-    <distributionManagement>
-      <repository>
-        <id>public-vg</id>
-        <name>public-vg</name>
-        <url>scp://videogorillas.com//var/www/users/videogorillas/m2/public</url>
-      </repository>
-    </distributionManagement>
+	<distributionManagement>
+		<repository>
+			<id>public.videogorillas.com</id>
+			<name>public.videogorillas.com</name>
+			<url>scp://videogorillas.com//var/www/users/videogorillas/m2/public</url>
+		</repository>
+	</distributionManagement>
 
 
 	<dependencies>
@@ -70,6 +88,11 @@
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
 			<version>2.1</version>
+		</dependency>
+		<dependency>
+			<groupId>seekable-io</groupId>
+			<artifactId>seekable-io</artifactId>
+			<version>1.0</version>
 		</dependency>
 	</dependencies>
 	<properties>

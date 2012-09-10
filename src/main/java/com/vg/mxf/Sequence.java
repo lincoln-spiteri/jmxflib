@@ -5,7 +5,6 @@ import static java.util.Arrays.asList;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class Sequence extends StructuralComponent {

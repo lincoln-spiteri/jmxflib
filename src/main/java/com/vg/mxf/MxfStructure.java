@@ -20,8 +20,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import com.vg.util.SeekableFileInputStream;
-import com.vg.util.SeekableInputStream;
+import com.vg.io.SeekableFileInputStream;
+import com.vg.io.SeekableInputStream;
 import com.vg.util.XmlUtil;
 
 public class MxfStructure {

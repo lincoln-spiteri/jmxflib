@@ -3,8 +3,8 @@ package com.vg.mxf;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import com.vg.io.SeekableInputStream;
 import com.vg.util.BER;
-import com.vg.util.SeekableInputStream;
 
 public class KLV implements Comparable<KLV> {
     public final long offset;

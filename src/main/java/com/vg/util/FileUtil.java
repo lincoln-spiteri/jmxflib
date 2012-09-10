@@ -19,6 +19,8 @@ import java.nio.channels.WritableByteChannel;
 
 import org.apache.commons.lang3.SystemUtils;
 
+import com.vg.io.SeekableInputStream;
+
 public class FileUtil {
     public static File tildeExpand(String path) {
         if (path.startsWith("~")) {

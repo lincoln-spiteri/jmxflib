@@ -2,9 +2,7 @@ package com.vg.mxf;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
 import org.junit.Assert;

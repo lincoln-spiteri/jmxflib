@@ -3,10 +3,8 @@ package com.vg.mxf;
 import static org.junit.Assert.assertEquals;
 
 import java.awt.Dimension;
-import java.io.File;
 import java.io.IOException;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.lang3.math.Fraction;
@@ -14,9 +12,9 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.vg.io.SeekableFileInputStream;
+import com.vg.io.SeekableInputStream;
 import com.vg.util.FileUtil;
-import com.vg.util.SeekableFileInputStream;
-import com.vg.util.SeekableInputStream;
 
 public class MxfStructureTest {
     @Test
@@ -31,7 +29,7 @@ public class MxfStructureTest {
     }
 
     @Test
-    @Ignore
+//    @Ignore
     public void testUniversal() throws Exception {
         MxfStructure structure = read("testdata/DawnOfTheDead_TRAILER3_110711_01.mxf");
         int dropFrame = structure.getTimecodeComponent().getDropFrame();

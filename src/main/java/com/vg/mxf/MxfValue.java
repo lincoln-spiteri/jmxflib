@@ -1,7 +1,6 @@
 package com.vg.mxf;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.Collections;
@@ -9,8 +8,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
+import com.vg.io.SeekableInputStream;
 import com.vg.util.FileUtil;
-import com.vg.util.SeekableInputStream;
 
 public class MxfValue extends PackedStruct {
     public void parse() {
