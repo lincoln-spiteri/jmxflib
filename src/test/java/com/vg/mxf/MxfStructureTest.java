@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import com.vg.io.SeekableFileInputStream;
 import com.vg.io.SeekableInputStream;
+import com.vg.mxf.Registry.ULDesc;
 import com.vg.util.FileUtil;
 
 public class MxfStructureTest {
@@ -29,7 +30,27 @@ public class MxfStructureTest {
     }
 
     @Test
-//    @Ignore
+    @Ignore
+    public void testABC() throws Exception {
+        MxfStructure structure = read("testdata/tDM_pHIG-1-27_h900738.mxf");
+        System.out.println(structure);
+    }
+
+    @Test
+    @Ignore
+    public void testReadAllKLVs() throws Exception {
+        SeekableInputStream in = new SeekableFileInputStream(FileUtil.tildeExpand("testdata/tDM_pHIG-1-27_h900738.mxf"));
+        do {
+            KLV readKL = KLV.readKL(in);
+            System.out.println(readKL);
+            Class<? extends MxfValue> ulDesc = Registry.m.get(readKL.key);
+            System.out.println(ulDesc);
+            in.skip(readKL.len);
+        } while (in.position() < in.length());
+    }
+
+    @Test
+    //    @Ignore
     public void testUniversal() throws Exception {
         MxfStructure structure = read("testdata/DawnOfTheDead_TRAILER3_110711_01.mxf");
         int dropFrame = structure.getTimecodeComponent().getDropFrame();

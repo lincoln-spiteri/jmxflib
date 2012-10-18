@@ -30,11 +30,11 @@ public class MxfStructure {
     private FooterPartitionPack footerPartitionPack;
     public TreeMap<KLV, MxfValue> headerKLVs = new TreeMap<KLV, MxfValue>();
     public TreeMap<KLV, MxfValue> bodyKLVs = new TreeMap<KLV, MxfValue>();
-    public TreeMap<KLV, MxfValue> indexKLVs = new TreeMap<KLV, MxfValue>();
+    public TreeMap<KLV, IndexTable> indexKLVs = new TreeMap<KLV, IndexTable>();
     public TreeMap<KLV, MxfValue> allKLVs = new TreeMap<KLV, MxfValue>();
     public TreeMap<UUID, MxfValue> uuidIndex = new TreeMap<UUID, MxfValue>();
 
-    long getBodyOffset() {
+    public long getBodyOffset() {
         KLV key = headerKLVs.lastEntry().getKey();
         return key.dataOffset + key.len;
     }
@@ -69,7 +69,10 @@ public class MxfStructure {
         allKLVs.putAll(headerKLVs);
         allKLVs.putAll(bodyKLVs);
         allKLVs.putAll(indexKLVs);
-        allKLVs.put(footerKLV, getFooterPartitionPack());
+        FooterPartitionPack fpp = getFooterPartitionPack();
+        if (fpp != null) {
+            allKLVs.put(footerKLV, fpp);
+        }
         for (Entry<KLV, MxfValue> entry : allKLVs.entrySet()) {
             MxfValue value = entry.getValue();
             UUID instanceUID = value.getInstanceUID();
@@ -104,42 +107,50 @@ public class MxfStructure {
         if (headerPartitionPack != null && headerPartitionPack.HeaderByteCount.get() > 0) {
             //read footer
             long footerOffset = headerPartitionPack.FooterPartition.get();
-            assertTrue(footerOffset > 0);
-            in.seek(footerOffset);
-            KLV kl = KLV.readKL(in);
-            assertTrue(FooterPartitionPack.Key.matches(kl.key));
-            FooterPartitionPack footerPartitionPack = MxfValue.parseValue(in, kl, FooterPartitionPack.class);
-            s.footerKLV = kl;
-            s.setFooterPartitionPack(footerPartitionPack);
-            long headerPPOffset = headerPartitionPack.ThisPartition.get();
-            long previousPartitionOffset = footerPartitionPack.PreviousPartition.get();
-
-            //read backwards partitions and indexes
-            TreeMap<KLV, MxfValue> bodyKLVs = s.bodyKLVs;
-            TreeMap<KLV, MxfValue> indexKLVs = s.indexKLVs;
-            do {
-                in.seek(previousPartitionOffset);
-                kl = KLV.readKL(in);
-                if (BodyPartitionPack.Key.matches(kl.key)) {
-                    BodyPartitionPack bpp = MxfValue.parseValue(in, kl, BodyPartitionPack.class);
-                    //sanity check: make sure partition offsets are actually going backwards
-                    assertTrue(bpp.PreviousPartition.get() < previousPartitionOffset);
-                    bodyKLVs.put(kl, bpp);
-                    previousPartitionOffset = bpp.PreviousPartition.get();
-                    if (bpp.IndexByteCount.get() > 0 && bpp.IndexSID.get() > 0) {
-                        //index follows
-                        kl = KLV.readKL(in);
-                        assertEquals(IndexTable.Key, kl.key);
-                        IndexTable indexTable = MxfValue.parseValue(in, kl, IndexTable.class);
-                        indexKLVs.put(kl, indexTable);
-                    }
-                } else if (HeaderPartitionPack.Key.matches(kl.key)) {
-                    break;
-                } else {
-                    throw new IllegalStateException();
+            if (footerOffset == 0) {
+                if (headerPartitionPack.IndexByteCount.get() > 0 && headerPartitionPack.IndexSID.get() > 0) {
+                    KLV kl = KLV.readKL(in);
+                    assertEquals(IndexTable.Key, kl.key);
+                    IndexTable indexTable = MxfValue.parseValue(in, kl, IndexTable.class);
+                    s.indexKLVs.put(kl, indexTable);
                 }
 
-            } while (previousPartitionOffset != headerPPOffset);
+            } else {
+                assertTrue(footerOffset > 0);
+                in.seek(footerOffset);
+                KLV kl = KLV.readKL(in);
+                assertTrue(FooterPartitionPack.Key.matches(kl.key));
+                FooterPartitionPack footerPartitionPack = MxfValue.parseValue(in, kl, FooterPartitionPack.class);
+                s.footerKLV = kl;
+                s.setFooterPartitionPack(footerPartitionPack);
+                long headerPPOffset = headerPartitionPack.ThisPartition.get();
+                long previousPartitionOffset = footerPartitionPack.PreviousPartition.get();
+
+                //read backwards partitions and indexes
+                do {
+                    in.seek(previousPartitionOffset);
+                    kl = KLV.readKL(in);
+                    if (BodyPartitionPack.Key.matches(kl.key)) {
+                        BodyPartitionPack bpp = MxfValue.parseValue(in, kl, BodyPartitionPack.class);
+                        //sanity check: make sure partition offsets are actually going backwards
+                        assertTrue(bpp.PreviousPartition.get() < previousPartitionOffset);
+                        s.bodyKLVs.put(kl, bpp);
+                        previousPartitionOffset = bpp.PreviousPartition.get();
+                        if (bpp.IndexByteCount.get() > 0 && bpp.IndexSID.get() > 0) {
+                            //index follows
+                            kl = KLV.readKL(in);
+                            assertEquals(IndexTable.Key, kl.key);
+                            IndexTable indexTable = MxfValue.parseValue(in, kl, IndexTable.class);
+                            s.indexKLVs.put(kl, indexTable);
+                        }
+                    } else if (HeaderPartitionPack.Key.matches(kl.key)) {
+                        break;
+                    } else {
+                        throw new IllegalStateException();
+                    }
+
+                } while (previousPartitionOffset != headerPPOffset);
+            }
 
         }
 
@@ -176,8 +187,8 @@ public class MxfStructure {
     }
 
     public long getFrameStreamOffset(int fn) {
-        for (Entry<KLV, MxfValue> entry : indexKLVs.entrySet()) {
-            IndexTable idx = (IndexTable) entry.getValue();
+        for (Entry<KLV, IndexTable> entry : indexKLVs.entrySet()) {
+            IndexTable idx = entry.getValue();
             if (idx.containsFrame(fn)) {
                 long streamOffset = idx.getStreamOffset(fn);
                 KLV closestBppKey = getHeaderKLV();
