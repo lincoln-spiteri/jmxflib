@@ -25,6 +25,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.io.output.CountingOutputStream;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -36,7 +37,7 @@ import com.vg.util.FileUtil;
 import com.vg.util.LongArrayList;
 import com.vg.util.XmlUtil;
 
-//@Ignore
+@Ignore
 public class MxfTest {
 
     @Test
