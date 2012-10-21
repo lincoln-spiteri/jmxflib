@@ -1,6 +1,7 @@
 package com.vg.mxf;
 
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -153,6 +154,20 @@ public class GenericPictureEssenceDescriptor extends FileDescriptor {
             return new Dimension((int) DisplayWidth.value.get(), (int) DisplayHeight.value.get());
         }
         return new Dimension(0, 0);
+    }
+
+    public Rectangle getDisplayRectangle() {
+        if (DisplayWidth != null && DisplayHeight != null) {
+            Rectangle r = new Rectangle(0, 0, (int) DisplayWidth.value.get(), (int) DisplayHeight.value.get());
+            if (DisplayXOffset != null) {
+                r.x = (int) DisplayXOffset.value.get();
+            }
+            if (DisplayYOffset != null) {
+                r.y = (int) DisplayYOffset.value.get();
+            }
+            return r;
+        }
+        return new Rectangle(0, 0, 0, 0);
     }
 
 }
