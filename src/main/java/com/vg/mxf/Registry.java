@@ -37,11 +37,13 @@ public class Registry {
         m.put(CDCIEssenceDescriptor.Key, CDCIEssenceDescriptor.class);
         m.put(JPEG2000PictureSubDescriptor.Key, JPEG2000PictureSubDescriptor.class);
         m.put(RandomIndex.Key, RandomIndex.class);
+        m.put(WaveAudioEssenceDescriptor.Key, WaveAudioEssenceDescriptor.class);
     }
     /** Sequence.DataDefiniton "Picture Essence Track" */
     public final static Key PictureUL = key("06.0E.2B.34.04.01.01.01.01.03.02.02.01.00.00.00");
     public final static Key FillerKey = key("06.0E.2B.34.01.01.01.02.03.01.02.10.01.00.00.00");
     public final static Key FrameKey = key("06.0E.2B.34.01.02.01.01.0D.01.03.01.15.01.08.01");
+    public final static Key FrameWrappedBroadcastWave = key("06.0E.2B.34.01.02.01.01.0D.01.03.01.16.01.01.01");
 
     public static class ULDesc {
         public final String ul;

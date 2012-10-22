@@ -1,8 +1,10 @@
 package com.vg.mxf;
 
+import static com.vg.util.FileUtil.tildeExpand;
 import static org.junit.Assert.assertEquals;
 
 import java.awt.Dimension;
+import java.io.File;
 import java.io.IOException;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -14,12 +16,11 @@ import org.junit.Test;
 
 import com.vg.io.SeekableFileInputStream;
 import com.vg.io.SeekableInputStream;
-import com.vg.mxf.Registry.ULDesc;
 import com.vg.util.FileUtil;
 
+@Ignore
 public class MxfStructureTest {
     @Test
-    @Ignore
     public void testNtsc() throws Exception {
         MxfStructure structure = read("testdata/WOF_3058_795198_1_NTSC_4x3_KK6855_JPEG2000_v0.mxf");
         int dropFrame = structure.getTimecodeComponent().getDropFrame();
@@ -30,27 +31,35 @@ public class MxfStructureTest {
     }
 
     @Test
-    @Ignore
     public void testABC() throws Exception {
         MxfStructure structure = read("testdata/tDM_pHIG-1-27_h900738.mxf");
         System.out.println(structure);
     }
 
     @Test
-    @Ignore
+    public void testAudio() throws Exception {
+        MxfStructure structure = read("testdata/StemTape_2010_HD_16x9_240_2398_english_0630_JPEG2000_a0.mxf");
+        System.out.println(structure);
+    }
+
+    @Test
     public void testReadAllKLVs() throws Exception {
-        SeekableInputStream in = new SeekableFileInputStream(FileUtil.tildeExpand("testdata/tDM_pHIG-1-27_h900738.mxf"));
+        SeekableInputStream in = new SeekableFileInputStream(
+                tildeExpand("testdata/StemTape_2010_HD_16x9_240_2398_english_0630_JPEG2000_a0.mxf"));
         do {
             KLV readKL = KLV.readKL(in);
             System.out.println(readKL);
-            Class<? extends MxfValue> ulDesc = Registry.m.get(readKL.key);
-            System.out.println(ulDesc);
+            Class<? extends MxfValue> mxfv = Registry.m.get(readKL.key);
+            if (Registry.FillerKey.equals(readKL.key)) {
+                System.out.println("Filler");
+            } else {
+                System.out.println(mxfv);
+            }
             in.skip(readKL.len);
         } while (in.position() < in.length());
     }
 
     @Test
-    //    @Ignore
     public void testUniversal() throws Exception {
         MxfStructure structure = read("testdata/DawnOfTheDead_TRAILER3_110711_01.mxf");
         int dropFrame = structure.getTimecodeComponent().getDropFrame();
@@ -59,7 +68,6 @@ public class MxfStructureTest {
     }
 
     @Test
-    @Ignore
     public void testUniversalAudio() throws Exception {
         String pathname = "testdata/DawnOfTheDead_TRAILER3_110711_audio_01.mxf";
         MxfStructure structure = read(pathname);
@@ -71,7 +79,9 @@ public class MxfStructureTest {
     }
 
     private MxfStructure read(String pathname) throws IOException {
-        SeekableInputStream in = new SeekableFileInputStream(FileUtil.tildeExpand(pathname));
+        File tildeExpand = FileUtil.tildeExpand(pathname);
+        Assert.assertTrue("cant read file " + tildeExpand, tildeExpand.exists() && tildeExpand.canRead());
+        SeekableInputStream in = new SeekableFileInputStream(tildeExpand);
         MxfStructure structure = MxfStructure.readStructure(in);
         in.close();
         return structure;

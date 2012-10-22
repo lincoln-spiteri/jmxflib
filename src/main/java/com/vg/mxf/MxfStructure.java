@@ -107,15 +107,13 @@ public class MxfStructure {
         if (headerPartitionPack != null && headerPartitionPack.HeaderByteCount.get() > 0) {
             //read footer
             long footerOffset = headerPartitionPack.FooterPartition.get();
-            if (footerOffset == 0) {
-                if (headerPartitionPack.IndexByteCount.get() > 0 && headerPartitionPack.IndexSID.get() > 0) {
-                    KLV kl = KLV.readKL(in);
-                    assertEquals(IndexTable.Key, kl.key);
-                    IndexTable indexTable = MxfValue.parseValue(in, kl, IndexTable.class);
-                    s.indexKLVs.put(kl, indexTable);
-                }
-
-            } else {
+            if (headerPartitionPack.IndexByteCount.get() > 0 && headerPartitionPack.IndexSID.get() > 0) {
+                KLV kl = KLV.readKL(in);
+                assertEquals(IndexTable.Key, kl.key);
+                IndexTable indexTable = MxfValue.parseValue(in, kl, IndexTable.class);
+                s.indexKLVs.put(kl, indexTable);
+            }
+            if (footerOffset != 0) {
                 assertTrue(footerOffset > 0);
                 in.seek(footerOffset);
                 KLV kl = KLV.readKL(in);
@@ -239,6 +237,7 @@ public class MxfStructure {
                 } else {
                     value = MxfValue.parseValue(in, k, class1, idx);
                 }
+//                System.out.println(value == null ? "null" : value.getClass());
                 headerKLVs.put(k, value);
                 if (PrimerPack.Key.equals(k.key)) {
                     PrimerPack pp = (PrimerPack) value;
@@ -398,6 +397,16 @@ public class MxfStructure {
         XmlUtil.writeXml(xml, out);
         in.close();
         out.close();
+    }
+
+    public WaveAudioEssenceDescriptor getWaveAudio() {
+        Set<Entry<KLV, MxfValue>> entrySet = headerKLVs.entrySet();
+        for (Entry<KLV, MxfValue> entry : entrySet) {
+            if (WaveAudioEssenceDescriptor.Key.equals(entry.getKey().key)) {
+                return (WaveAudioEssenceDescriptor) entry.getValue();
+            }
+        }
+        return null;
     }
 
 }

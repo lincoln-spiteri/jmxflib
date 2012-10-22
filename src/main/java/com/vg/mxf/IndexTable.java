@@ -134,4 +134,8 @@ public class IndexTable extends MxfValue {
         IndexEditRate.num.set(num);
         IndexEditRate.den.set(den);
     }
+
+    public long getIndexDuration() {
+        return IndexDuration != null ? IndexDuration.value.get() : 0L;
+    }
 }
