@@ -35,6 +35,7 @@ public class Registry {
         m.put(SourcePackage.Key, SourcePackage.class);
         m.put(RGBAEssenceDescriptor.Key, RGBAEssenceDescriptor.class);
         m.put(CDCIEssenceDescriptor.Key, CDCIEssenceDescriptor.class);
+        m.put(MpegVideoEssenceDescriptor.Key, MpegVideoEssenceDescriptor.class);
         m.put(JPEG2000PictureSubDescriptor.Key, JPEG2000PictureSubDescriptor.class);
         m.put(RandomIndex.Key, RandomIndex.class);
         m.put(WaveAudioEssenceDescriptor.Key, WaveAudioEssenceDescriptor.class);
