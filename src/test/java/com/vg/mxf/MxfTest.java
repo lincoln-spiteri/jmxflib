@@ -8,9 +8,11 @@ import static org.junit.Assert.assertEquals;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.lang.annotation.Annotation;
@@ -23,6 +25,7 @@ import java.util.TreeMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -30,8 +33,10 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.vg.io.RandomAccessFileBufferedInputStream;
 import com.vg.io.SeekableFileInputStream;
 import com.vg.io.SeekableInputStream;
+import com.vg.io.SeekableLimitedInputStream;
 import com.vg.util.BER;
 import com.vg.util.FileUtil;
 import com.vg.util.LongArrayList;
@@ -39,6 +44,40 @@ import com.vg.util.XmlUtil;
 
 @Ignore
 public class MxfTest {
+
+    @Test
+    public void testListKLVs() throws Exception {
+        SeekableInputStream in = new RandomAccessFileBufferedInputStream(
+                new File(
+                        "/Volumes/storage/spe/_j2k_universal/Erin_Brockovich/234416_02271_FTR_185_LB_ENG/234416_02271_FTR_185_LB_ENG_audio_01.mxf"));
+        long len = in.length();
+        do {
+            KLV readKL = KLV.readKL(in);
+            System.out.println(readKL.key + " " + Registry.m.get(readKL.key));
+            in.skip(readKL.len);
+        } while (in.position() < len);
+
+    }
+
+   
+    public static void readFully(InputStream in, byte[] type) throws IOException {
+        if (!tryReadFully(in, type)) {
+            throw new EOFException();
+        }
+    }
+
+    public static boolean tryReadFully(InputStream in, byte[] type) throws IOException {
+        int n = 0;
+        int len = type.length;
+        while (n < len) {
+            int count = in.read(type, 0 + n, len - n);
+            if (count < 0) {
+                return false;
+            }
+            n += count;
+        }
+        return true;
+    }
 
     @Test
     public void testDecode() throws Exception {

@@ -109,7 +109,7 @@ public class MxfStructure {
             long footerOffset = headerPartitionPack.FooterPartition.get();
             if (headerPartitionPack.IndexByteCount.get() > 0 && headerPartitionPack.IndexSID.get() > 0) {
                 KLV kl = KLV.readKL(in);
-                System.out.println(Registry.m.get(kl.key));
+                //                System.out.println(Registry.m.get(kl.key));
                 if (IndexTable.Key.equals(kl.key)) {
                     IndexTable indexTable = MxfValue.parseValue(in, kl, IndexTable.class);
                     s.indexKLVs.put(kl, indexTable);
@@ -240,7 +240,7 @@ public class MxfStructure {
                 } else {
                     value = MxfValue.parseValue(in, k, class1, idx);
                 }
-                //                System.out.println(value == null ? "null" : value.getClass());
+//                System.out.println(value == null ? "null" : value.getClass());
                 headerKLVs.put(k, value);
                 if (PrimerPack.Key.equals(k.key)) {
                     PrimerPack pp = (PrimerPack) value;

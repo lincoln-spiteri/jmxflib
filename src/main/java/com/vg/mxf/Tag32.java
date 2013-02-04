@@ -16,4 +16,8 @@ public class Tag32 extends BaseTag {
     public int getValueSize() {
         return 4;
     }
+    
+    public long get() {
+        return value.get();
+    }
 }

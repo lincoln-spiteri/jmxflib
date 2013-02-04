@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>jmxflib</groupId>
 	<artifactId>jmxflib</artifactId>
-	<version>0.0.7</version>
+	<version>0.0.8</version>
 	<repositories>
 		<repository>
 			<id>public.videogorillas.com</id>
@@ -98,4 +98,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+	<scm>
+		<developerConnection>scm:svn:https://jmxflib.googlecode.com/svn/trunk</developerConnection>
+	</scm>
 </project>

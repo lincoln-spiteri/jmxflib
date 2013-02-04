@@ -20,6 +20,12 @@ import com.vg.util.FileUtil;
 
 @Ignore
 public class MxfStructureTest {
+    
+    @Test
+    public void testSubDesc() throws Exception {
+        SeekableInputStream in = new SeekableFileInputStream(tildeExpand("~/Dropbox/testdata/lastresort_101_hd_16x9_178_2398_eng_OS9637_JPEG2000_v0.mxf_head10mb"));
+        TreeMap<KLV, MxfValue> readHeader = MxfStructure.readHeader(in);
+    }
     @Test
     public void testNtsc() throws Exception {
         MxfStructure structure = read("testdata/WOF_3058_795198_1_NTSC_4x3_KK6855_JPEG2000_v0.mxf");
@@ -39,6 +45,12 @@ public class MxfStructureTest {
     @Test
     public void testAudio() throws Exception {
         MxfStructure structure = read("testdata/StemTape_2010_HD_16x9_240_2398_english_0630_JPEG2000_a0.mxf");
+        System.out.println(structure);
+    }
+    
+    @Test
+    public void testAudioNBC() throws Exception {
+        MxfStructure structure = read("/Volumes/storage/spe/_j2k_universal/Erin_Brockovich/234416_02271_FTR_185_LB_ENG/234416_02271_FTR_185_LB_ENG_audio_01.mxf");
         System.out.println(structure);
     }
 

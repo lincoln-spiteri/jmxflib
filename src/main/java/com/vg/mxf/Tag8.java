@@ -17,4 +17,8 @@ public class Tag8 extends BaseTag {
         return 1;
     }
 
+    public int get() {
+        return value.get();
+    }
+
 }
