@@ -17,7 +17,9 @@ public class InterchangeObject extends MxfValue {
         buf.position(size());
         while (buf.hasRemaining()) {
             int localTag = buf.getShort() & 0xffff;
+            // System.out.println("localTag: " + Integer.toHexString(localTag));
             int sz = buf.getShort() & 0xffff;
+            int pos = buf.position();
             if (!handleTag(localTag, sz, buf)) {
                 String msg = "unhandled tag " + Integer.toHexString(localTag);
                 if (ltks != null) {
@@ -30,12 +32,13 @@ public class InterchangeObject extends MxfValue {
                             n = desc.refName;
                             d = desc.desc;
                         }
-                        msg = String.format("unhandled tag %04X: %s %s %s", localTag, ltk.key.toString(), n, d);
+                        msg = String.format(this.getClass().getName() + " unhandled tag %04X: %s %s %s", localTag, ltk.key.toString(), n, d);
+
                     }
                 }
-                throw new IllegalStateException(msg);
+                System.err.println(msg);
             }
-            buf.position(size());
+            buf.position(pos + sz);
         }
 
     }

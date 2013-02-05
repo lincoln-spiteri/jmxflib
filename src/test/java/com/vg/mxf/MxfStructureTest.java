@@ -22,6 +22,12 @@ import com.vg.util.FileUtil;
 public class MxfStructureTest {
     
     @Test
+    public void testSubDesc2() throws Exception {
+        SeekableInputStream in = new SeekableFileInputStream(new File("/Volumes/techlabs/eldorado_imf/eldorado_xvycc.mxf"));
+        TreeMap<KLV, MxfValue> readHeader = MxfStructure.readHeader(in);
+        
+    }
+    @Test
     public void testSubDesc() throws Exception {
         SeekableInputStream in = new SeekableFileInputStream(tildeExpand("~/Dropbox/testdata/lastresort_101_hd_16x9_178_2398_eng_OS9637_JPEG2000_v0.mxf_head10mb"));
         TreeMap<KLV, MxfValue> readHeader = MxfStructure.readHeader(in);
