@@ -36,7 +36,7 @@ public class Key extends PackedStruct implements Comparable<Key> {
         k.setByteBuffer(ByteBuffer.wrap(b), 0);
         return k;
     }
-
+    
     public Category getCategory() {
         short s = category.get();
         Category[] values = Category.values();
@@ -130,6 +130,13 @@ public class Key extends PackedStruct implements Comparable<Key> {
     public static Key key(String string, long loMask) {
         Key key = key(string);
         key.loMask = loMask;
+        return key;
+    }
+    
+    public static Key key(String string, long hiMask, long loMask) {
+        Key key = key(string);
+        key.loMask = loMask;
+        key.hiMask = hiMask;
         return key;
     }
 }
