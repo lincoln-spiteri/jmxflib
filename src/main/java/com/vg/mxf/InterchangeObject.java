@@ -1,7 +1,9 @@
 package com.vg.mxf;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Assert;
 
@@ -11,6 +13,7 @@ public class InterchangeObject extends MxfValue {
     TagUUID InstanceUID = null;
     TagUUID GenerationUID = null;
     TagUUID ObjectClass = null;
+    List<TagValue> unhandled;
 
     public void parse() {
         ByteBuffer buf = getContent();
@@ -35,7 +38,12 @@ public class InterchangeObject extends MxfValue {
                         msg = String.format(this.getClass().getName() + " unhandled tag %04X: %s %s %s", localTag, ltk.key.toString(), n, d);
 
                     }
+                    if (unhandled == null) {
+                        unhandled = new ArrayList<TagValue>();
+                    }
+                    unhandled.add(inner(new TagValue(localTag, sz)));
                 }
+
                 System.err.println(msg);
             }
             buf.position(pos + sz);
