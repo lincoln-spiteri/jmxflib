@@ -2,10 +2,23 @@ package com.vg.mxf;
 
 import static com.vg.mxf.Key.key;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Test;
+
+import com.vg.io.SeekableFileInputStream;
+import com.vg.io.SeekableInputStream;
+import com.vg.mxf.Registry.ULDesc;
+import com.vg.util.FileUtil;
 
 public class IndexTable extends MxfValue {
     public static final Key Key = key("06.0E.2B.34.02.53.01.01.0D.01.02.01.01.10.01.00");
@@ -37,18 +50,39 @@ public class IndexTable extends MxfValue {
     Tag64 ExtStartOffset;
     @Tag(tag = 0x3f10)
     Tag64 VBEByteCount;
+    List<TagValue> unhandled;
 
     public void parse() {
-        ByteBuffer buf = getAllContent();
-        buf.position(size());
+        ByteBuffer buf = getContent();
         while (buf.hasRemaining()) {
             int localTag = buf.getShort() & 0xffff;
+            // System.out.println("localTag: " + Integer.toHexString(localTag));
             int sz = buf.getShort() & 0xffff;
+            int pos = buf.position();
             if (!handleTag(localTag, sz, buf)) {
                 String msg = "unhandled tag " + Integer.toHexString(localTag);
-                throw new IllegalStateException(msg);
+                if (ltks != null) {
+                    LocalTagKey ltk = ltks.getLtk(localTag);
+                    if (ltk != null) {
+                        ULDesc desc = Registry.getInstance().get(ltk.key);
+                        String n = "";
+                        String d = "";
+                        if (desc != null) {
+                            n = desc.refName;
+                            d = desc.desc;
+                        }
+                        msg = String.format(this.getClass().getName() + " unhandled tag %04X: %s %s %s", localTag, ltk.key.toString(), n, d);
+
+                    }
+                    if (unhandled == null) {
+                        unhandled = new ArrayList<TagValue>();
+                    }
+                    unhandled.add(inner(new TagValue(localTag, sz)));
+                }
+
+                System.err.println(msg);
             }
-            buf.position(size());
+            buf.position(pos + sz);
         }
 
     }
@@ -137,5 +171,12 @@ public class IndexTable extends MxfValue {
 
     public long getIndexDuration() {
         return IndexDuration != null ? IndexDuration.value.get() : 0L;
+    }
+
+    @Test
+    public void testLocalTag0() throws Exception {
+        File file = FileUtil.tildeExpand("~/Dropbox/testdata/mcs/dc70afb6-cd6c-453b-a469-5d0dd4f5cd8c.MXF");
+        SeekableInputStream in = new SeekableFileInputStream(file);
+        MxfStructure readStructure = MxfStructure.readStructure(in);
     }
 }
