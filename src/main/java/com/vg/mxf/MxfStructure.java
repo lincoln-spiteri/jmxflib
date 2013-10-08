@@ -105,11 +105,11 @@ public class MxfStructure {
         HeaderPartitionPack headerPartitionPack = (HeaderPartitionPack) s.headerKLVs.firstEntry().getValue();
         s.setHeaderPartitionPack(headerPartitionPack);
         if (headerPartitionPack != null && headerPartitionPack.HeaderByteCount.get() > 0) {
-            //read footer
+            // read footer
             long footerOffset = headerPartitionPack.FooterPartition.get();
             if (headerPartitionPack.IndexByteCount.get() > 0 && headerPartitionPack.IndexSID.get() > 0) {
                 KLV kl = KLV.readKL(in);
-                //                System.out.println(Registry.m.get(kl.key));
+                // System.out.println(Registry.m.get(kl.key));
                 if (IndexTable.Key.equals(kl.key)) {
                     IndexTable indexTable = MxfValue.parseValue(in, kl, IndexTable.class);
                     s.indexKLVs.put(kl, indexTable);
@@ -126,18 +126,19 @@ public class MxfStructure {
                 long headerPPOffset = headerPartitionPack.ThisPartition.get();
                 long previousPartitionOffset = footerPartitionPack.PreviousPartition.get();
 
-                //read backwards partitions and indexes
+                // read backwards partitions and indexes
                 do {
                     in.seek(previousPartitionOffset);
                     kl = KLV.readKL(in);
                     if (BodyPartitionPack.Key.matches(kl.key)) {
                         BodyPartitionPack bpp = MxfValue.parseValue(in, kl, BodyPartitionPack.class);
-                        //sanity check: make sure partition offsets are actually going backwards
+                        // sanity check: make sure partition offsets are
+                        // actually going backwards
                         assertTrue(bpp.PreviousPartition.get() < previousPartitionOffset);
                         s.bodyKLVs.put(kl, bpp);
                         previousPartitionOffset = bpp.PreviousPartition.get();
                         if (bpp.IndexByteCount.get() > 0 && bpp.IndexSID.get() > 0) {
-                            //index follows
+                            // index follows
                             kl = KLV.readKL(in);
                             if (IndexTable.Key.equals(kl.key)) {
                                 IndexTable indexTable = MxfValue.parseValue(in, kl, IndexTable.class);
@@ -209,8 +210,8 @@ public class MxfStructure {
                         }
                     }
                 }
-                long piu = closestBppKey.dataOffset + closestBppKey.len + closestBpp.HeaderByteCount.get() - bodyOffset
-                        + streamOffset;
+                long piu = closestBppKey.dataOffset + closestBppKey.len + closestBpp.HeaderByteCount.get()
+                        + closestBpp.IndexByteCount.get() - bodyOffset + streamOffset;
                 return piu;
             }
         }
@@ -240,7 +241,8 @@ public class MxfStructure {
                 } else {
                     value = MxfValue.parseValue(in, k, class1, idx);
                 }
-//                System.out.println(value == null ? "null" : value.getClass());
+                // System.out.println(value == null ? "null" :
+                // value.getClass());
                 headerKLVs.put(k, value);
                 if (PrimerPack.Key.equals(k.key)) {
                     PrimerPack pp = (PrimerPack) value;
