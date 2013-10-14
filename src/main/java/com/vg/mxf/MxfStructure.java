@@ -115,7 +115,7 @@ public class MxfStructure {
                     s.indexKLVs.put(kl, indexTable);
                 }
             }
-            if (footerOffset != 0) {
+            if (footerOffset != 0 && footerOffset < in.length()) {
                 assertTrue(footerOffset > 0);
                 in.seek(footerOffset);
                 KLV kl = KLV.readKL(in);
