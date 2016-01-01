@@ -1,0 +1,2 @@
+MXF Parsing Library in Java
+The goal of jmxflib is to parse mxf container files, no content decoding/encoding is provided. Consider it as a pure muxer/demuxer library with advanced knowledge of mxf specific header fields.
